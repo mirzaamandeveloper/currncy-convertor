@@ -1,5 +1,4 @@
-const BASE_URL =
-"https://2024-03-06.currency-api.pages.dev/v1/currencies/";
+const BASE_URL = "https://api.exchangerate-api.com/v4/latest/";
 
 const dropdowns = document.querySelectorAll(".dropdown select");
 const btn = document.querySelector("form button");
@@ -12,6 +11,7 @@ for (let select of dropdowns) {
     let newOption = document.createElement("option");
     newOption.innerText = currCode;
     newOption.value = currCode;
+
     if (select.name === "from" && currCode === "USD") {
       newOption.selected = "selected";
     } else if (select.name === "to" && currCode === "INR") {
@@ -28,16 +28,28 @@ for (let select of dropdowns) {
 const updateExchangeRate = async () => {
   let amount = document.querySelector(".amount input");
   let amtVal = amount.value;
+
   if (amtVal === "" || amtVal < 1) {
     amtVal = 1;
     amount.value = "1";
   }
-  const URL = `${BASE_URL}/${fromCurr.value.toLowerCase()}.json`;
-  let response = await fetch(URL);
-  let data = await response.json();
-  let rate = data[toCurr.value.toLowerCase()];
-  let finalAmount = (data[fromCurr.value.toLowerCase()][toCurr.value.toLowerCase()]*parseInt(amount.value)).toFixed(2);
-  msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount} ${toCurr.value}`;
+
+  // Working API link
+  const URL = `${BASE_URL}${fromCurr.value}`;
+
+  try {
+    let response = await fetch(URL);
+    let data = await response.json();
+
+    let rate = data.rates[toCurr.value]; // NEW fixed line
+    let finalAmount = (rate * amtVal).toFixed(2);
+
+    msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount} ${toCurr.value}`;
+
+  } catch (error) {
+    msg.innerText = "Error fetching exchange rate!";
+    console.error(error);
+  }
 };
 
 const updateFlag = (element) => {
@@ -55,4 +67,7 @@ btn.addEventListener("click", (evt) => {
 
 window.addEventListener("load", () => {
   updateExchangeRate();
+});
+
+
 });
